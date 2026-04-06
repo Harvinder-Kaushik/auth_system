@@ -9,6 +9,12 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        """Normalize email to lowercase for case-insensitive comparison."""
+        return v.lower().strip()
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
@@ -30,6 +36,12 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        """Normalize email to lowercase for case-insensitive comparison."""
+        return v.lower().strip()
 
 
 class UserResponse(BaseModel):
@@ -58,4 +70,50 @@ class RefreshTokenRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        """Normalize email to lowercase for case-insensitive comparison."""
+        return v.lower().strip()
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes (bcrypt limit)")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[0-9]", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes (bcrypt limit)")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[0-9]", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 

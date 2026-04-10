@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# https://docs.coderabbit.ai/getting-started/yaml-configuration
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  poem: false
+  in_progress_fortune: false
+
+  path_filters:
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+    - "!.env"
+    - "!auth.db"
+    - "!logs/**"
+    - "!.pytest_cache/**"
+
+  path_instructions:
+    - path: "app/security.py"
+      instructions: |
+        Treat as high-risk: password hashing parameters, timing leaks, deprecated algorithms,
+        and any custom crypto. Prefer well-maintained libraries and documented cost factors.
+    - path: "app/jwt_utils.py"
+      instructions: |
+        Check algorithm allow-lists (reject "none"), expiry/nbf validation, issuer/audience if used,
+        key handling, and secure defaults for signing. Flag secrets in code or logs.
+    - path: "app/routers.py"
+      instructions: |
+        Focus on authz boundaries, input validation vs schemas, error responses that avoid
+        user enumeration, rate limiting on sensitive routes, and consistent HTTP status codes.
+    - path: "app/dependencies.py"
+      instructions: |
+        Verify dependency injection for current-user resolution, token extraction, and that
+        failed auth does not leak implementation details.
+    - path: "app/rate_limit.py"
+      instructions: |
+        Confirm limits apply to login/register and other abuse-prone endpoints; check bypass,
+        shared state in multi-worker deployments, and response codes (429 + Retry-After where appropriate).
+    - path: "app/**/*.py"
+      instructions: |
+        Python/FastAPI: type hints, Pydantic v2 patterns, SQL injection safe queries (parameters),
+        no broad except/pass, structured logging without secrets or PII.
+    - path: "tests/**/*.py"
+      instructions: |
+        Require coverage for auth success/failure, edge cases (expired/invalid tokens), and
+        that tests do not rely on production secrets.
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  art: false
